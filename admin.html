@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Added overlay for text readability -->
+    <div class="overlay"></div>
+
+    <!-- Added header and footer -->
+    <header>
+        Admin Panel
+    </header>
+
+    <nav class="admin-sidebar">
+        <ul>
+            <li><a href="#dashboard">Dashboard</a></li>
+            <li><a href="#users">User Management</a></li>
+            <li><a href="#settings">Settings</a></li>
+            <li><a href="#reports">Reports</a></li>
+            <li><a href="#activity-logs">Activity Logs</a></li>
+            <li><a href="#analytics-dashboard">Analytics Dashboard</a></li>
+            <li><a href="#user-roles">User Roles</a></li>
+            <li><a href="#notifications">Notifications</a></li>
+            <li><a href="#export-import">Export/Import Data</a></li>
+        </ul>
+
+        <script>
+        function logout() {
+            // Clear session data
+            localStorage.removeItem('userSession');
+            // Redirect to index page
+            window.location.href = 'index.html';
+        }
+    </script>
+
+    <!-- Added logout button with functionality -->
+    <button class="logout-button" onclick="logout()">Logout</button>
+    </nav>
+    <main>
+        <section id="dashboard" class="dashboard">
+            <h1>Welcome to the Admin Panel</h1>
+            <div class="dashboard-widgets">
+                <div class="widget">
+                    <h2>Users</h2>
+                    <p>120 Active Users</p>
+                </div>
+                <div class="widget">
+                    <h2>Sales</h2>
+                    <p>$15,000 This Month</p>
+                </div>
+                <div class="widget">
+                    <h2>Reports</h2>
+                    <p>5 New Reports</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Activity Logs Section -->
+        <section id="activity-logs" class="activity-logs">
+            <h2>Activity Logs</h2>
+            <ul>
+                <li>User John updated profile at 10:00 AM</li>
+                <li>Admin Jane exported sales data at 9:45 AM</li>
+                <li>System backup completed at 9:30 AM</li>
+            </ul>
+        </section>
+
+        <!-- Analytics Dashboard Section -->
+        <section id="analytics-dashboard" class="analytics-dashboard">
+            <h2>Analytics Dashboard</h2>
+            <div class="chart-container">
+                <p>Charts and graphs will be displayed here.</p>
+            </div>
+        </section>
+
+        <!-- User Roles and Permissions Section -->
+        <section id="user-roles" class="user-roles">
+            <h2>User Roles and Permissions</h2>
+            <p>Manage roles and permissions for users.</p>
+        </section>
+
+        <!-- Notifications Section -->
+        <section id="notifications" class="notifications">
+            <h2>Notifications</h2>
+            <ul>
+                <li>New user registered: juan de jesus</li>
+                  <li>New user registered: Christofer Vergara </li>
+                <li>System update available</li>
+            </ul>
+        </section>
+
+        <!-- Export/Import Data Section -->
+        <section id="export-import" class="export-import">
+            
+            <button>Import Data</button>
+        </section>
+    </main>
+
+    <!-- Added search bar -->
+    <div class="search-bar">
+        <input type="text" placeholder="Search...">
+        <button>Search</button>
+    </div>
+
+    <footer>
+        &copy; 2025 Admin Panel. All rights reserved.
+    </footer>
+
+</body>
+</html>
