@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile App Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+    <script>
+        function showLogin() {
+            document.getElementById('splash-screen').style.display = 'none';
+            document.getElementById('login-panel').style.display = 'flex';
+        }
+        function showDashboard(username) {
+            document.getElementById('coffee-frame').innerHTML = `
+                <div class="dashboard">
+                    <div class="dashboard-header">
+                        <div class="dashboard-logo">
+                            <div class="steam"><span></span><span></span><span></span></div>
+                            &#x2615;
+                        </div>
+                        <div class="dashboard-title"><span class="coffee-accent">&#x1F4A7;</span>Welcome${username ? ', ' + username : ''}!</div>
+                        <div class="dashboard-subtitle">Discover our best coffee</div>
+                    </div>
+                    <div class="satisfied-section" id="satisfied-section">
+                        <div class="satisfied-title"><span class="coffee-accent">&#x1F4A7;</span>Customers Satisfied With Our Product</div>
+                        <div class="satisfied-list">
+                            <div class="satisfied-customer">
+                                <div class="customer-avatar">👩‍🦰</div>
+                                <div class="customer-info">
+                                    <div class="customer-name">Maria Santos</div>
+                                    <div class="customer-feedback">“Super sarap ng coffee nila! Lagi akong bumabalik.”</div>
+                                </div>
+                                <div class="customer-rating">★★★★★</div>
+                            </div>
+                            <div class="satisfied-customer">
+                                <div class="customer-avatar">👨‍🦱</div>
+                                <div class="customer-info">
+                                    <div class="customer-name">Juan Dela Cruz</div>
+                                    <div class="customer-feedback">“Best place to relax and enjoy my favorite mocha.”</div>
+                                </div>
+                                <div class="customer-rating">★★★★★</div>
+                            </div>
+                            <div class="satisfied-customer">
+                                <div class="customer-avatar">👩‍🦳</div>
+                                <div class="customer-info">
+                                    <div class="customer-name">Ana Lopez</div>
+                                    <div class="customer-feedback">“Napaka-friendly ng staff at ang ambience ay cozy!”</div>
+                                </div>
+                                <div class="customer-rating">★★★★★</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="menu-filters" id="menu-filters" style="display:none;">
+                        <button class="filter-btn active" data-filter="all" onclick="filterProducts('all')"><span class="coffee-accent">&#x2615;</span>All</button>
+                        <button class="filter-btn" data-filter="hot" onclick="filterProducts('hot')"><span class="coffee-accent">&#x1F4A7;</span>Hot</button>
+                        <button class="filter-btn" data-filter="cold" onclick="filterProducts('cold')"><span class="coffee-accent">&#x2744;</span>Cold</button>
+                        <button class="filter-btn" data-filter="chocolate" onclick="filterProducts('chocolate')"><span class="coffee-accent">&#x1F36B;</span>Chocolate</button>
+                    </div>
+                    <div class="product-list" id="product-list" style="display:none;"></div>
+                    <div class="profile-panel" id="profile-panel" style="display:none;">
+                        <div class="profile-avatar" id="profile-avatar" onclick="editProfileAvatar()" style="cursor:pointer;">👤</div>
+                        <div class="profile-username" id="profile-username">${username || 'User'}</div>
+                        <button class="edit-profile-btn" onclick="editProfileName()">Edit Profile</button>
+                        <div class="profile-section-title"><span class="coffee-accent">&#x2615;</span>Order History</div>
+                        <div class="order-history-list" id="order-history-list">No orders yet.</div>
+                        <button class="dashboard-logout small-logout" onclick="window.location.reload()">Log Out</button>
+                        <div class="profile-section-title" style="margin-top:18px;"><span class="coffee-accent">&#x1F4A7;</span>Submit Feedback</div>
+                        <form id="feedback-form" class="feedback-form">
+                            <textarea id="feedback-input" placeholder="Share your thoughts..." required style="width:100%;border-radius:10px;padding:8px;border:1px solid #e0c9a6;"></textarea>
+                            <button type="submit" class="feedback-btn">Submit</button>
+                        </form>
+                    </div>
+                    <div class="cart-indicator" id="cart-indicator" style="display:none;">0</div>
+                    <div class="cart-panel" id="cart-panel">
+                        <h3><span class="coffee-accent">&#x1F4A7;</span>Your Cart</h3>
+                        <div id="cart-items"></div>
+                        <button class="cart-checkout" onclick="checkoutCart()">Checkout</button>
+                    </div>
+                </div>
+                <div class="bottom-nav">
+                    <button class="nav-item active" id="nav-home" onclick="switchTab('home')">🏠<span style='font-size:0.9rem;display:block;'>Home</span></button>
+                    <button class="nav-item" id="nav-menu" onclick="switchTab('menu')">☕<span style='font-size:0.9rem;display:block;'>Menu</span></button>
+                    <button class="nav-item" id="nav-profile" onclick="switchTab('profile')">👤<span style='font-size:0.9rem;display:block;'>Profile</span></button>
+                    <button class="nav-item" id="nav-cart" onclick="toggleCart()">🛒<span style='font-size:0.9rem;display:block;'>Cart</span></button>
+                    <button class="nav-item" id="darkmode-toggle" onclick="toggleDarkModeUI()" style="font-size:1.3rem;" aria-label="Toggle dark mode">🌙</button>
+                </div>
+                <div id="modal-bg" class="modal-bg" style="display:none;"></div>
+                <div id="product-modal" class="product-modal" style="display:none;"></div>
+            `;
+            window.cart = {};
+            window.orderHistory = window.orderHistory || [];
+            window.currentUsername = username || 'User';
+            window.profileAvatar = window.profileAvatar || '👤';
+            renderProductList('all');
+            attachProfileEvents();
+            // Ensure dark mode is re-applied after dashboard renders
+            if (localStorage.getItem('coffee_darkmode') === '1') {
+                document.documentElement.classList.add('dark-mode');
+                document.body.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+                document.body.classList.remove('dark-mode');
+            }
+            setTimeout(updateDarkModeIcon, 100); // Update icon after dashboard renders
+        }
+
+        function attachProfileEvents() {
+            // Edit profile name
+            window.editProfileName = function() {
+                const newName = prompt('Enter new display name:', window.currentUsername || 'User');
+                if (newName && newName.trim()) {
+                    window.currentUsername = newName.trim();
+                    document.getElementById('profile-username').textContent = window.currentUsername;
+                }
+            };
+            // Edit avatar
+            window.editProfileAvatar = function() {
+                const emoji = prompt('Enter emoji for your avatar:', window.profileAvatar || '👤');
+                if (emoji && emoji.trim()) {
+                    window.profileAvatar = emoji.trim();
+                    document.getElementById('profile-avatar').textContent = window.profileAvatar;
+                }
+            };
+            // Feedback form
+            const feedbackForm = document.getElementById('feedback-form');
+            if (feedbackForm) {
+                feedbackForm.onsubmit = function(e) {
+                    e.preventDefault();
+                    const val = document.getElementById('feedback-input').value.trim();
+                    if (val) {
+                        alert('Thank you for your feedback!');
+                        document.getElementById('feedback-input').value = '';
+                    }
+                };
+            }
+        }
+
+        // Product data with categories and details
+        const products = [
+            { name: 'Cappuccino', price: 3.50, desc: 'Espresso, steamed milk, foam', emoji: '🥤', category: 'hot', details: 'A classic Italian coffee drink with equal parts espresso, steamed milk, and foam.' },
+            { name: 'Mocha', price: 4.00, desc: 'Espresso, chocolate, milk', emoji: '🍫', category: 'chocolate', details: 'A delicious blend of espresso, chocolate, and steamed milk.' },
+            { name: 'Iced Latte', price: 3.75, desc: 'Espresso, cold milk, ice', emoji: '🧋', category: 'cold', details: 'Chilled espresso with cold milk and ice for a refreshing treat.' },
+            { name: 'Hot Americano', price: 3.00, desc: 'Espresso, hot water', emoji: '☕', category: 'hot', details: 'Espresso diluted with hot water for a smooth, rich flavor.' },
+            { name: 'Iced Chocolate', price: 4.25, desc: 'Chocolate, milk, ice', emoji: '🍫', category: 'chocolate', details: 'Rich chocolate and milk served over ice.' },
+            { name: 'Cold Brew', price: 3.80, desc: 'Slow-steeped cold coffee', emoji: '🧊', category: 'cold', details: 'Coffee brewed slowly in cold water for a smooth, bold taste.' }
+        ];
+
+        function renderProductList(filter) {
+            const list = document.getElementById('product-list');
+            if (!list) return;
+            let filtered = products;
+            if (filter && filter !== 'all') {
+                filtered = products.filter(p => p.category === filter);
+            }
+            list.innerHTML = filtered.map(p => `
+                <div class="product-card" data-product="${p.name}" onclick="showProductModal('${p.name}')">
+                    <div class="product-img">${p.emoji}</div>
+                    <div class="product-info">
+                        <div class="product-title"><span class="coffee-accent">&#x2615;</span>${p.name}</div>
+                        <div class="product-desc">${p.desc}</div>
+                    </div>
+                    <div class="product-price">$${p.price.toFixed(2)}</div>
+                    <button class="cart-btn" onclick="event.stopPropagation();addToCart('${p.name}', ${p.price})">Add</button>
+                </div>
+            `).join('');
+        }
+
+        function showProductModal(name) {
+            const prod = products.find(p => p.name === name);
+            if (!prod) return;
+            const modal = document.getElementById('product-modal');
+            const bg = document.getElementById('modal-bg');
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-img">${prod.emoji}</div>
+                    <div class="modal-title">${prod.name}</div>
+                    <div class="modal-desc">${prod.details}</div>
+                    <div class="modal-price">$${prod.price.toFixed(2)}</div>
+                    <button class="cart-btn" onclick="addToCart('${prod.name}', ${prod.price})">Add to Cart</button>
+                    <button class="modal-close" onclick="closeProductModal()">Close</button>
+                </div>
+            `;
+            modal.style.display = 'block';
+            bg.style.display = 'block';
+        }
+        function closeProductModal() {
+            document.getElementById('product-modal').style.display = 'none';
+            document.getElementById('modal-bg').style.display = 'none';
+        }
+
+        document.addEventListener('click', function(e) {
+            // Close product modal if clicking outside modal-content when modal is open
+            const modalBg = document.getElementById('modal-bg');
+            const modal = document.getElementById('product-modal');
+            if (modalBg && modalBg.style.display === 'block') {
+                if (e.target === modalBg) {
+                    closeProductModal();
+                }
+            }
+        });
+
+        function filterProducts(filter) {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.filter-btn[data-filter='${filter}']`).classList.add('active');
+            renderProductList(filter);
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.getElementById('nav-' + tab).classList.add('active');
+            const dashboard = document.querySelector('.dashboard');
+            const satisfiedSection = document.getElementById('satisfied-section');
+            const productList = document.getElementById('product-list');
+            const menuFilters = document.getElementById('menu-filters');
+            const profilePanel = document.getElementById('profile-panel');
+            if(tab === 'home') {
+                dashboard.querySelector('.dashboard-header .dashboard-title').textContent = 'Welcome!';
+                dashboard.querySelector('.dashboard-header .dashboard-subtitle').textContent = 'Discover our best coffee';
+                satisfiedSection.style.display = 'block';
+                productList.style.display = 'none';
+                menuFilters.style.display = 'none';
+                profilePanel.style.display = 'none';
+            } else if(tab === 'menu') {
+                dashboard.querySelector('.dashboard-header .dashboard-title').textContent = 'Menu';
+                dashboard.querySelector('.dashboard-header .dashboard-subtitle').textContent = 'Browse all drinks';
+                satisfiedSection.style.display = 'none';
+                productList.style.display = 'block';
+                menuFilters.style.display = 'flex';
+                profilePanel.style.display = 'none';
+            } else if(tab === 'profile') {
+                dashboard.querySelector('.dashboard-header .dashboard-title').textContent = 'Profile';
+                dashboard.querySelector('.dashboard-header .dashboard-subtitle').textContent = 'Your account info';
+                satisfiedSection.style.display = 'none';
+                productList.style.display = 'none';
+                menuFilters.style.display = 'none';
+                profilePanel.style.display = 'flex';
+                updateProfilePanel();
+            }
+        }
+        function addToCart(product, price) {
+            if (!window.cart) window.cart = {};
+            if (!window.cart[product]) window.cart[product] = { qty: 0, price: price };
+            window.cart[product].qty++;
+            updateCartIndicator();
+            saveCartToStorage && saveCartToStorage();
+        }
+        function updateCartIndicator() {
+            const cart = window.cart || {};
+            const totalQty = Object.values(cart).reduce((sum, item) => sum + item.qty, 0);
+            const indicator = document.getElementById('cart-indicator');
+            if (indicator) {
+                if (totalQty > 0) {
+                    indicator.textContent = totalQty;
+                    indicator.style.display = 'flex';
+                } else {
+                    indicator.style.display = 'none';
+                }
+            }
+            updateCartPanel();
+        }
+        function updateCartPanel() {
+            const cart = window.cart || {};
+            const itemsDiv = document.getElementById('cart-items');
+            let html = '';
+            let total = 0;
+            for (const [name, item] of Object.entries(cart)) {
+                if (item.qty > 0) {
+                    html += `<div class='cart-item'><span class='cart-item-title'>${name}</span> <span class='cart-item-qty'><button onclick=\"changeQty('${name}',-1)\">-</button> x${item.qty} <button onclick=\"changeQty('${name}',1)\">+</button></span> <span class='cart-item-qty'>$${(item.price * item.qty).toFixed(2)}</span> <button onclick=\"removeFromCart('${name}')\" style=\"background:none;border:none;color:#ff3c5f;font-size:1.1rem;cursor:pointer;\">✕</button></div>`;
+                    total += item.price * item.qty;
+                }
+            }
+            if (!html) html = '<div style="color:#a67c52;">Cart is empty.</div>';
+            html += `<div style='margin-top:8px;color:#6b4f2c;font-weight:600;'>Total: $${total.toFixed(2)}</div>`;
+            itemsDiv.innerHTML = html;
+        }
+
+        window.changeQty = function(name, delta) {
+            if (!window.cart[name]) return;
+            window.cart[name].qty += delta;
+            if (window.cart[name].qty < 1) window.cart[name].qty = 1;
+            updateCartIndicator();
+            saveCartToStorage && saveCartToStorage();
+        };
+        window.removeFromCart = function(name) {
+            if (window.cart[name]) {
+                delete window.cart[name];
+                updateCartIndicator();
+                saveCartToStorage && saveCartToStorage();
+            }
+        };
+        function toggleCart() {
+            const panel = document.getElementById('cart-panel');
+            if (!panel) return;
+            if (panel.style.display === 'block') {
+                panel.style.display = 'none';
+            } else {
+                updateCartPanel();
+                panel.style.display = 'block';
+            }
+        }
+        function checkoutCart() {
+            const cart = window.cart || {};
+            const orderItems = Object.entries(cart).filter(([_, item]) => item.qty > 0).map(([name, item]) => `${name} x${item.qty}`);
+            const total = Object.values(cart).reduce((sum, item) => sum + (item.qty * item.price), 0);
+            if (orderItems.length > 0) {
+                const order = {
+                    items: orderItems.join(', '),
+                    total: total.toFixed(2),
+                    date: new Date().toLocaleString()
+                };
+                window.orderHistory = window.orderHistory || [];
+                window.orderHistory.unshift(order);
+                // Save order history to localStorage if needed
+                if (typeof saveOrderHistoryToStorage === 'function') saveOrderHistoryToStorage();
+            }
+            alert('Thank you for your order!');
+            window.cart = {};
+            updateCartIndicator();
+            saveCartToStorage && saveCartToStorage();
+            toggleCart();
+        }
+        // Improved dark mode toggle for all screens
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            html.classList.toggle('dark-mode');
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('coffee_darkmode', html.classList.contains('dark-mode') ? '1' : '0');
+        }
+        function updateDarkModeIcon() {
+            const btn = document.getElementById('darkmode-toggle');
+            if (!btn) return;
+            const isDark = document.documentElement.classList.contains('dark-mode');
+            btn.textContent = isDark ? '☀️' : '🌙';
+            btn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+        }
+        // On load, restore dark mode if set
+        document.addEventListener('DOMContentLoaded', function() {
+            if (localStorage.getItem('coffee_darkmode') === '1') {
+                document.documentElement.classList.add('dark-mode');
+                document.body.classList.add('dark-mode');
+            }
+            updateDarkModeIcon();
+        });
+        function showSignup() {
+            document.getElementById('splash-screen').style.display = 'none';
+            document.getElementById('login-panel').style.display = 'none';
+            let signupPanel = document.getElementById('signup-panel');
+            if (!signupPanel) {
+                const panel = document.createElement('div');
+                panel.className = 'login-panel';
+                panel.id = 'signup-panel';
+                panel.style.display = 'flex';
+                panel.innerHTML = `
+                    <div class="login-title">Sign Up</div>
+                    <form class="login-form" id="signup-form">
+                        <input type="text" id="signup-username" placeholder="Username" required>
+                        <input type="password" id="signup-password" placeholder="Password" required>
+                        <button type="submit">Sign Up</button>
+                    </form>
+                    <div class='social-or'>or</div>
+                    <button class="social-btn google" onclick="simulateSocialLogin('google')"><img src="google_logo.png" alt="Google">Continue with Google</button>
+                    <button class="social-btn facebook" onclick="simulateSocialLogin('facebook')"><img src='https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png' alt='Facebook'>Continue with Facebook</button>
+                    <div class="login-switch">Already have an account? <button class="login-link" type="button" onclick="showLoginFromSignup()">Log In</button></div>
+                `;
+                document.getElementById('coffee-frame').appendChild(panel);
+                document.getElementById('signup-form').onsubmit = function(e) {
+                    e.preventDefault();
+                    const username = document.getElementById('signup-username').value.trim();
+                    const password = document.getElementById('signup-password').value;
+                    if (!username || !password) return;
+                    let users = JSON.parse(localStorage.getItem('coffee_users') || '{}');
+                    if (users[username]) {
+                        alert('Username already exists!');
+                        return;
+                    }
+                    users[username] = password;
+                    localStorage.setItem('coffee_users', JSON.stringify(users));
+                    alert('Registration successful! You can now log in.');
+                    showLoginFromSignup();
+                };
+            } else {
+                signupPanel.style.display = 'flex';
+            }
+        }
+        function showLoginFromSignup() {
+            const signupPanel = document.getElementById('signup-panel');
+            if (signupPanel) signupPanel.style.display = 'none';
+            document.getElementById('login-panel').style.display = 'flex';
+        }
+        // Override login form submit to check registered users
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.querySelector('.login-form');
+            if (loginForm) {
+                loginForm.onsubmit = function(e) {
+                    e.preventDefault();
+                    const username = document.getElementById('username').value.trim();
+                    const password = document.getElementById('password').value;
+                    let users = JSON.parse(localStorage.getItem('coffee_users') || '{}');
+                    if (!users[username] || users[username] !== password) {
+                        alert('Invalid username or password!');
+                        return;
+                    }
+                    showDashboard(username);
+                };
+            }
+        });
+        function simulateSocialLogin(provider) {
+            let username = '';
+            if (provider === 'google') {
+                username = 'GoogleUser';
+            } else if (provider === 'facebook') {
+                username = 'FacebookUser';
+            }
+            showDashboard(username);
+        }
+    </script>
+</head>
+<body>
+    <div class="coffee-frame" id="coffee-frame">
+        <div class="splash" id="splash-screen">
+            <div class="coffee-logo">
+                <div class="steam">
+                    <span></span><span></span><span></span>
+                </div>
+                ☕
+            </div>
+            <div class="slogan"><span class="coffee-accent">&#x2615;</span>Taste the Best Coffee in Town</div>
+            <div class="slogan-small">Freshly brewed, just for you</div>
+            <button class="splash-btn" onclick="showLogin()"><span class="coffee-accent">&#x1F4A7;</span>Get Started</button>
+        </div>
+        <div class="login-panel" id="login-panel">
+            <div class="login-title"><span class="coffee-accent">&#x1F4A7;</span>Log In</div>
+            <form class="login-form" onsubmit="event.preventDefault(); showDashboard(document.getElementById('username').value);">
+                <input type="text" id="username" placeholder="Username" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit"><span class="coffee-accent">&#x2615;</span>Log In</button>
+            </form>
+            <div class="social-or">or</div>
+            <button class="social-btn google" onclick="simulateSocialLogin('google')"><img src="https://i.pinimg.com/736x/8c/03/0b/8c030bd6bd7ee87ad41485e3c7598dd4.jpg" alt="Google">Continue with Google</button>
+            <button class="social-btn facebook" onclick="simulateSocialLogin('facebook')"><img src='https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png' alt='Facebook'>Continue with Facebook</button>
+            <div class="login-switch">Don't have an account? <button class="login-link" onclick="showSignup()">Sign Up</button></div>
+        </div>
+        <button class="admin-btn" onclick="window.location.href='admin.html';">Go to Admin </button>
+    </div>
+</body>
+</html>
